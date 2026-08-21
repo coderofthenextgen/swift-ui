@@ -2261,14 +2261,15 @@ function SwiftUI:CreateWindow(Config)
                     SearchBox2:GetPropertyChangedSignal("Text"):Connect(function()
                         FilterQuery = SearchBox2.Text:lower()
                         RefreshOptions()
-                        -- resize
                         local Cnt = 0
                         for _, V in ipairs(Values) do
                             if FilterQuery == "" or V:lower():find(FilterQuery, 1, true) then Cnt = Cnt + 1 end
                         end
-                        local H = math.clamp(Cnt * 26 + (Searchable and 30 or 8), 0, MaxVisible * 26 + 10)
+                        local H = math.clamp(Cnt * 24 + 8, 0, MaxVisible * 24 + 8)
+                        local SearchHeight = 28
+                        local Gap = 4
                         ListFrame.Size = UDim2.new(1, 0, 0, H)
-                        Holder.Size = UDim2.new(1, 0, 0, 44 + H + 6)
+                        Holder.Size = UDim2.new(1, 0, 0, 44 + SearchHeight + Gap + H + 6)
                     end)
                 end
                 local function RefreshOptions()
@@ -2276,11 +2277,9 @@ function SwiftUI:CreateWindow(Config)
                         if Child:IsA("TextButton") then Child:Destroy() end
                     end
                     local Count = 0
-                    local VisibleCount = 0
                     for _, Value in ipairs(Values) do
                         local PassFilter = FilterQuery == "" or Value:lower():find(FilterQuery, 1, true)
                         if PassFilter then
-                            VisibleCount = VisibleCount + 1
                             Count = Count + 1
                             local IsSelected = false
                             local Clean = function(s) return tostring(s):lower():gsub("%s+", "") end
@@ -2292,39 +2291,41 @@ function SwiftUI:CreateWindow(Config)
                                 IsSelected = Clean(Dropdown.Value or "") == Clean(Value)
                             end
                             local Opt = SwiftUI:Create("TextButton", {
-                            BackgroundColor3 = IsSelected and SwiftUI.Theme.Accent or SwiftUI.Theme.Element,
-                            Text = (IsSelected and (Multi and "✓ " or "• ") or "  ") .. Value,
-                            FontFace = SwiftUI.Font,
-                            TextSize = 12,
-                            TextColor3 = IsSelected and Color3.new(1,1,1) or SwiftUI.Theme.FontDim,
-                            Size = UDim2.new(1, 0, 0, 24),
-                            AutoButtonColor = false,
-                            Parent = ListFrame,
-                        })
-                        SwiftUI:ApplyCorner(Opt, 0)
-                        Opt.MouseButton1Click:Connect(function()
-                            if Multi then
-                                if type(Dropdown.Value) ~= "table" then Dropdown.Value = {} end
-                                local Idx = table.find(Dropdown.Value, Value)
-                                if Idx then table.remove(Dropdown.Value, Idx) else table.insert(Dropdown.Value, Value) end
-                                SelectedLabel.Text = #Dropdown.Value > 0 and table.concat(Dropdown.Value, ", ") or "None"
-                                RefreshOptions()
-                                SwiftUI:SafeCallback(Callback, Dropdown.Value)
-                            else
-                                Dropdown.Value = Value
-                                SelectedLabel.Text = Value
-                                IsOpen = false
-                                ListFrame.Visible = false
-                                SwiftUI:Tween(Arrow, {Rotation = 90}, TweenInfoFast)
-                                Holder.Size = UDim2.new(1, 0, 0, 44)
-                                SwiftUI:SafeCallback(Callback, Value)
-                                RefreshOptions()
-                            end
-                            if Id then SwiftUI.Options[Id] = Dropdown end
-                        end)
+                                BackgroundColor3 = IsSelected and SwiftUI.Theme.Accent or SwiftUI.Theme.Element,
+                                Text = (IsSelected and (Multi and "✓ " or "• ") or "  ") .. Value,
+                                FontFace = SwiftUI.Font,
+                                TextSize = 12,
+                                TextColor3 = IsSelected and Color3.new(1,1,1) or SwiftUI.Theme.FontDim,
+                                Size = UDim2.new(1, 0, 0, 22),
+                                AutoButtonColor = false,
+                                LayoutOrder = Count,
+                                Parent = ListFrame,
+                            })
+                            SwiftUI:ApplyCorner(Opt, 0)
+                            Opt.MouseButton1Click:Connect(function()
+                                if Multi then
+                                    if type(Dropdown.Value) ~= "table" then Dropdown.Value = {} end
+                                    local Idx = table.find(Dropdown.Value, Value)
+                                    if Idx then table.remove(Dropdown.Value, Idx) else table.insert(Dropdown.Value, Value) end
+                                    SelectedLabel.Text = #Dropdown.Value > 0 and table.concat(Dropdown.Value, ", ") or "None"
+                                    RefreshOptions()
+                                    SwiftUI:SafeCallback(Callback, Dropdown.Value)
+                                else
+                                    Dropdown.Value = Value
+                                    SelectedLabel.Text = Value
+                                    IsOpen = false
+                                    ListFrame.Visible = false
+                                    if SearchHolder2 then SearchHolder2.Visible = false end
+                                    SwiftUI:Tween(Arrow, {Rotation = 90}, TweenInfoFast)
+                                    Holder.Size = UDim2.new(1, 0, 0, 44)
+                                    SwiftUI:SafeCallback(Callback, Value)
+                                    RefreshOptions()
+                                end
+                                if Id then SwiftUI.Options[Id] = Dropdown end
+                            end)
                         end
                     end
-                    ListFrame.CanvasSize = UDim2.new(0,0,0, Count * 26 + 8)
+                    ListFrame.CanvasSize = UDim2.new(0, 0, 0, Count * 24 + 8)
                 end
                 RefreshOptions()
 
@@ -2345,14 +2346,10 @@ function SwiftUI:CreateWindow(Config)
                     RefreshOptions()
                 end
 
-                ListFrame.BackgroundTransparency = 1
-                for _, Ch in ipairs(ListFrame:GetChildren()) do
-                    if Ch:IsA("GuiObject") then Ch.BackgroundTransparency = 1 end
-                end
                 Button.MouseButton1Click:Connect(function()
                     IsOpen = not IsOpen
                     ListFrame.Visible = IsOpen
-                    if SearchHolder2 then SearchHolder2.Visible = IsOpen and Searchable end
+                    if SearchHolder2 then SearchHolder2.Visible = IsOpen end
                     if IsOpen then
                         if Searchable and SearchBox2 then
                             SearchBox2.Text = ""
@@ -2365,9 +2362,9 @@ function SwiftUI:CreateWindow(Config)
                         else
                             Count = #Values
                         end
-                        local ListHeight = math.clamp(Count * 26 + 8, 0, MaxVisible * 26 + 8)
-                        local SearchHeight = Searchable and 22 or 0
-                        local Gap = Searchable and 6 or 0
+                        local SearchHeight = Searchable and 28 or 0
+                        local Gap = Searchable and 4 or 0
+                        local ListHeight = math.clamp(Count * 24 + 8, 0, MaxVisible * 24 + 8)
                         local TotalHeight = ListHeight + SearchHeight + Gap
                         if Searchable then
                             SearchHolder2.Position = UDim2.new(0, 0, 0, 44)
@@ -2380,14 +2377,10 @@ function SwiftUI:CreateWindow(Config)
                         end
                         Holder.Size = UDim2.new(1, 0, 0, 44 + TotalHeight + 6)
                         SwiftUI:Tween(Arrow, {Rotation = 270}, TweenInfoFast)
-                        SwiftUI:Tween(ListFrame, {BackgroundTransparency = 0}, TweenInfoFast)
-                        if SearchHolder2 then SwiftUI:Tween(SearchHolder2, {BackgroundTransparency = 0}, TweenInfoFast) end
                         if SearchBox2 then task.defer(function() pcall(function() SearchBox2:CaptureFocus() end) end) end
                     else
                         Holder.Size = UDim2.new(1, 0, 0, 44)
                         SwiftUI:Tween(Arrow, {Rotation = 90}, TweenInfoFast)
-                        SwiftUI:Tween(ListFrame, {BackgroundTransparency = 1}, TweenInfoFast)
-                        if SearchHolder2 then SwiftUI:Tween(SearchHolder2, {BackgroundTransparency = 1}, TweenInfoFast) end
                         task.wait(0.12)
                         if not IsOpen then
                             ListFrame.Visible = false

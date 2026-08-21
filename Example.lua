@@ -19,6 +19,7 @@ local CombatTab = Window:AddTab("Combat", "⚔")
 local VisualsTab = Window:AddTab("Visuals", "👁")
 local SettingsTab = Window:AddTab("Settings", "⚙")
 
+-- Main Tab
 local CombatLeft = MainTab:AddLeftGroupbox("Combat")
 CombatLeft:AddSection("Controls")
 CombatLeft:AddParagraph("Welcome", "This is the updated Swift UI library with new controls!")
@@ -26,7 +27,7 @@ CombatLeft:AddLabel("Collapsible • search at top filters this", true)
 local T1 = CombatLeft:AddToggle("AutoFarm", {Text = "Auto Farm", Default = false, Callback = function(V) print("Farm", V) end})
 T1:AddColorPicker({Default = Color3.fromRGB(124,92,255), Callback = function(C) print("Farm color", C) end})
 CombatLeft:AddToggle("AutoParry", {Text = "Auto Parry", Default = true, Color = Color3.fromRGB(46,204,113), Callback = function(V) print(V) end})
-CombatLeft:AddDivider("Settings")
+CombatLeft:AddDivider()
 CombatLeft:AddSlider("WalkSpeed", {Text = "WalkSpeed", Min = 16, Max = 150, Default = 16, Suffix = " studs", Callback = function(V) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = V end})
 CombatLeft:AddSliderInput("FOVSlider", {Text = "FOV Slider+Input", Min = 70, Max = 120, Default = 90, Suffix = "°", Callback = print})
 CombatLeft:AddDropdown("Weapon", {Text = "Weapon", Values = {"Sword","Gun","Fists","Magic"}, Default = "Sword", Callback = print})
@@ -37,15 +38,16 @@ VisualsRight:AddToggle("ESP", {Text = "ESP Enabled", Default = true, Callback = 
 VisualsRight:AddColorPicker("ESPColor", {Text = "ESP Color", Default = Color3.fromRGB(124,92,255), Callback = print})
 VisualsRight:AddInput("TargetInput", {Text = "Target Player", Placeholder = "Username...", Callback = print})
 VisualsRight:AddKeyPicker("ESPKey", {Text = "ESP Toggle", Default = Enum.KeyCode.Q, Mode = "Toggle", Callback = print})
-VisualsRight:AddDivider("Dropdowns")
+VisualsRight:AddDivider()
 VisualsRight:AddDropdown("SingleDropdown", {Text = "Single", Values = {"Low","Medium","High"}, Default = "Medium", Callback = print})
 VisualsRight:AddDropdown("MultiDropdown", {Text = "Multi Pick", Values = {"Head","Body","Legs","Arms"}, Multi = true, Default = {"Head"}, Callback = function(V) print("Multi", table.concat(V,",")) end})
 VisualsRight:AddDropdown("SearchDropdown", {Text = "Searchable", Values = {"Alpha","Beta","Gamma","Delta","Epsilon","Zeta","Eta","Theta"}, Searchable = true, MaxVisible = 5, Placeholder = "Search...", Callback = print})
 VisualsRight:AddListbox("ListboxDemo", {Text = "Listbox", Values = {"Option 1","Option 2","Option 3","Option 4"}, Default = "Option 1", Callback = print})
-VisualsRight:AddDivider("Extra")
+VisualsRight:AddDivider()
 VisualsRight:AddSlider("FOV", {Text = "FOV", Min = 70, Max = 120, Default = 70, Suffix = "°", Callback = print})
 VisualsRight:AddDropdown("Quality", {Text = "Quality", Values = {"Low","Medium","High","Ultra"}, Default = "High", Callback = print})
 
+-- Combat Tab
 local PlayerGroup = CombatTab:AddLeftGroupbox("Player")
 PlayerGroup:AddSection("Character")
 PlayerGroup:AddSlider("Speed", {Text = "Speed", Min = 0, Max = 300, Default = 100, Suffix = "%", Callback = print})
@@ -54,6 +56,7 @@ PlayerGroup:AddToggleKeybind("Fly", {Text = "Fly", Default = false, Keybind = En
 PlayerGroup:AddDivider()
 PlayerGroup:AddButton({Text = "Reset Character", Func = function() game.Players.LocalPlayer.Character:BreakJoints() end})
 
+-- Visuals Tab
 local WorldGroup = VisualsTab:AddLeftGroupbox("World")
 WorldGroup:AddSection("Lighting")
 WorldGroup:AddParagraph("World Options", "Toggle fullbright, adjust brightness, and pick ambient color below.")
@@ -61,6 +64,7 @@ WorldGroup:AddToggle("Fullbright", {Text = "Fullbright", Default = false})
 WorldGroup:AddSlider("Brightness", {Text = "Brightness", Min = 0, Max = 5, Default = 2, Rounding = 1, Callback = print})
 WorldGroup:AddColorPicker("Ambient", {Text = "Ambient", Default = Color3.fromRGB(150,150,150)})
 
+-- Settings Tab
 SaveManager:SetFolder("SwiftUI")
 SaveManager:BuildConfigSection(SettingsTab)
 ThemeManager:BuildThemeSection(SettingsTab)
@@ -74,7 +78,7 @@ CustomGroup:AddButton({Text = "Reset Custom", Func = function() SwiftUI:SetCorne
 
 local Info = SettingsTab:AddRightGroupbox("About")
 Info:AddLabel("Swift UI • Straight boxy dark • Accent updates live", true)
-Info:AddDivider("Info")
+Info:AddDivider()
 Info:AddLabel("Search filters labels/toggles • Click groupbox header to collapse • RightShift toggles", true)
 Info:AddButton({Text = "Copy Discord", Func = function() setclipboard("https://discord.gg/swift") SwiftUI:Notify({Title = "Copied", Description = "Discord copied", Time = 2}) end})
 
