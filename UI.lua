@@ -2048,7 +2048,7 @@ function SwiftUI:CreateWindow(Config)
                 SwiftUI:ApplyCorner(Thumb, 6)
                 SwiftUI:ApplyStroke(Thumb, SwiftUI.Theme.Outline, 1)
 
-                local Slider = {Value = Default, Type = "Slider", Text = Text}
+                local Slider = {Value = Default, Type = "Slider", Text = Text, Holder = Holder}
 
                 local function RoundValue(Value)
                     if Rounding == 0 then return math.floor(Value) end
@@ -2574,6 +2574,156 @@ function SwiftUI:CreateWindow(Config)
                 table.insert(Groupbox.Elements, {Type = "Input", Holder = Holder, Text = Text})
                 task.defer(AutoResize)
                 return Input
+            end
+
+            function Groupbox:AddParagraph(Text, Content)
+                local Holder = SwiftUI:Create("Frame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = ContainerFrame,
+                })
+                SwiftUI:Create("UIPadding", {
+                    PaddingTop = UDim.new(0, 2),
+                    PaddingBottom = UDim.new(0, 2),
+                    PaddingLeft = UDim.new(0, 2),
+                    PaddingRight = UDim.new(0, 2),
+                    Parent = Holder,
+                })
+                local Title = SwiftUI:Create("TextLabel", {
+                    BackgroundTransparency = 1,
+                    Text = Text,
+                    FontFace = SwiftUI.FontBold,
+                    TextSize = 12,
+                    TextColor3 = SwiftUI.Theme.Font,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Size = UDim2.new(1, 0, 0, 16),
+                    Parent = Holder,
+                })
+                local Body = SwiftUI:Create("TextLabel", {
+                    BackgroundTransparency = 1,
+                    Text = Content or "",
+                    FontFace = SwiftUI.Font,
+                    TextSize = 11,
+                    TextColor3 = SwiftUI.Theme.FontDim,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = Holder,
+                })
+                local Api = {Type = "Paragraph", Holder = Holder}
+                function Api:SetText(NewTitle, NewBody)
+                    if NewTitle then Title.Text = NewTitle end
+                    if NewBody then Body.Text = NewBody end
+                end
+                table.insert(Groupbox.Elements, Api)
+                task.defer(AutoResize)
+                return Api
+            end
+
+            function Groupbox:AddSection(Text)
+                local Holder = SwiftUI:Create("Frame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, 22),
+                    Parent = ContainerFrame,
+                })
+                local LineL = SwiftUI:Create("Frame", {
+                    BackgroundColor3 = SwiftUI.Theme.Outline,
+                    Size = UDim2.new(0, 20, 0, 1),
+                    Position = UDim2.new(0, 0, 0.5, 0),
+                    Parent = Holder,
+                })
+                local Label = SwiftUI:Create("TextLabel", {
+                    BackgroundTransparency = 1,
+                    Text = Text:upper(),
+                    FontFace = SwiftUI.FontBold,
+                    TextSize = 10,
+                    TextColor3 = SwiftUI.Theme.Accent,
+                    Size = UDim2.new(1, 0, 1, 0),
+                    Parent = Holder,
+                })
+                local LineR = SwiftUI:Create("Frame", {
+                    BackgroundColor3 = SwiftUI.Theme.Outline,
+                    Size = UDim2.new(0, 20, 0, 1),
+                    Position = UDim2.new(1, 0, 0.5, 0),
+                    AnchorPoint = Vector2.new(1, 0),
+                    Parent = Holder,
+                })
+                local Api = {Type = "Section", Holder = Holder}
+                function Api:SetText(NewText) Label.Text = NewText:upper() end
+                table.insert(Groupbox.Elements, Api)
+                task.defer(AutoResize)
+                return Api
+            end
+
+            function Groupbox:AddToggleKeybind(Id, Config)
+                if typeof(Id) == "table" then Config = Id; Id = Config.Text or "ToggleKeybind" end
+                Config = Config or {}
+                local ToggleApi = Groupbox:AddToggle(Id .. "_Toggle", {
+                    Text = Config.Text or Id,
+                    Default = Config.Default,
+                    Callback = Config.Callback,
+                })
+                local KeybindApi = Groupbox:AddKeyPicker(Id .. "_Key", {
+                    Text = (Config.Text or Id) .. " Key",
+                    Default = Config.Keybind or "None",
+                    Mode = "Toggle",
+                    Callback = function() ToggleApi:SetValue(not ToggleApi.Value) end,
+                })
+                return ToggleApi, KeybindApi
+            end
+
+            function Groupbox:AddSliderInput(Id, Config)
+                if typeof(Id) == "table" then Config = Id; Id = Config.Text or "SliderInput" end
+                Config = Config or {}
+                local SliderApi = Groupbox:AddSlider(Id .. "_Slider", {
+                    Text = Config.Text or Id,
+                    Default = Config.Default or 0,
+                    Min = Config.Min or 0,
+                    Max = Config.Max or 100,
+                    Rounding = Config.Rounding or 0,
+                    Callback = Config.Callback,
+                })
+                local Holder = SliderApi.Holder
+                if Holder then
+                    local InputBox = SwiftUI:Create("Frame", {
+                        BackgroundColor3 = SwiftUI.Theme.Element,
+                        Size = UDim2.fromOffset(36, 18),
+                        AnchorPoint = Vector2.new(1, 0.5),
+                        Position = UDim2.new(1, -44, 0.5, 0),
+                        Parent = Holder,
+                    })
+                    SwiftUI:ApplyCorner(InputBox, 0)
+                    SwiftUI:ApplyStroke(InputBox, SwiftUI.Theme.Outline, 1)
+                    local TextBox = SwiftUI:Create("TextBox", {
+                        BackgroundTransparency = 1,
+                        Text = tostring(SliderApi.Value),
+                        PlaceholderText = "",
+                        FontFace = SwiftUI.FontCode,
+                        TextSize = 10,
+                        TextColor3 = SwiftUI.Theme.Font,
+                        TextXAlignment = Enum.TextXAlignment.Center,
+                        ClearTextOnFocus = false,
+                        Size = UDim2.fromScale(1, 1),
+                        Parent = InputBox,
+                    })
+                    TextBox.FocusLost:Connect(function()
+                        local Num = tonumber(TextBox.Text)
+                        if Num then
+                            Num = math.clamp(Num, Config.Min or 0, Config.Max or 100)
+                            SliderApi:SetValue(Num)
+                            TextBox.Text = tostring(Num)
+                        end
+                    end)
+                    TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+                        local Num = tonumber(TextBox.Text)
+                        if Num then
+                            SliderApi:SetValue(Num)
+                        end
+                    end)
+                end
+                return SliderApi
             end
 
             function Groupbox:AddColorPicker(Id, Config)
@@ -3310,6 +3460,82 @@ function SwiftUI:Unload()
         pcall(function() Conn:Disconnect() end)
     end
     self.Unloaded = true
+end
+
+function SwiftUI:Watermark(Config)
+    Config = Config or {}
+    local Text = Config.Text or "Swift UI"
+    local Duration = Config.Duration or 3
+    local Holder = self:Create("Frame", {
+        BackgroundColor3 = self.Theme.Main,
+        Size = UDim2.new(0, 0, 0, 28),
+        Position = UDim2.new(0, 12, 0, 12),
+        AutomaticSize = Enum.AutomaticSize.X,
+        Parent = self.ScreenGui,
+    })
+    self:ApplyCorner(Holder, 0)
+    self:ApplyStroke(Holder, Color3.fromRGB(0,0,0), 2)
+    self:ApplyStroke(Holder, self.Theme.Outline, 1)
+    self:Create("UIPadding", {
+        PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10),
+        PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4),
+        Parent = Holder,
+    })
+    local Label = self:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Text = Text,
+        FontFace = self.FontBold,
+        TextSize = 12,
+        TextColor3 = self.Theme.Accent,
+        Size = UDim2.new(0, 0, 1, 0),
+        AutomaticSize = Enum.AutomaticSize.X,
+        Parent = Holder,
+    })
+    if Duration and Duration > 0 then
+        task.delay(Duration, function()
+            self:Tween(Holder, {BackgroundTransparency = 1}, TweenInfoMedium)
+            self:Tween(Label, {TextTransparency = 1}, TweenInfoMedium)
+            task.delay(1, function() Holder:Destroy() end)
+        end)
+    end
+    return {Label = Label, Holder = Holder}
+end
+
+function SwiftUI:Tooltip(Config)
+    Config = Config or {}
+    local Text = Config.Text or ""
+    local Target = Config.Target
+    local OffsetX = Config.OffsetX or 0
+    local OffsetY = Config.OffsetY or 4
+    if not Target then return end
+    local Tip = self:Create("TextLabel", {
+        BackgroundColor3 = self.Theme.Main,
+        Text = Text,
+        FontFace = self.Font,
+        TextSize = 11,
+        TextColor3 = self.Theme.FontDim,
+        Size = UDim2.new(0, 0, 0, 22),
+        AutomaticSize = Enum.AutomaticSize.X,
+        Visible = false,
+        ZIndex = 200,
+        Parent = self.ScreenGui,
+    })
+    self:ApplyCorner(Tip, 0)
+    self:ApplyStroke(Tip, self.Theme.Outline, 1)
+    self:Create("UIPadding", {
+        PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6),
+        PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2),
+        Parent = Tip,
+    })
+    Target.MouseEnter:Connect(function()
+        Tip.Visible = true
+        local Pos = Target.AbsolutePosition
+        Tip.Position = UDim2.new(0, Pos.X + OffsetX, 0, Pos.Y + Target.AbsoluteSize.Y + OffsetY)
+    end)
+    Target.MouseLeave:Connect(function()
+        Tip.Visible = false
+    end)
+    return {Set = function(_, NewText) Tip.Text = NewText end}
 end
 
 return SwiftUI
