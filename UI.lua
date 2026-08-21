@@ -2010,12 +2010,14 @@ function SwiftUI:CreateWindow(Config)
                     Size = UDim2.new(1, -60, 1, 0),
                     Parent = Top,
                 })
-                local ValueLabel = SwiftUI:Create("TextLabel", {
+                local ValueLabel = SwiftUI:Create("TextBox", {
                     BackgroundColor3 = SwiftUI.Theme.Element,
                     Text = tostring(Default) .. Suffix,
+                    PlaceholderText = "",
                     FontFace = SwiftUI.FontCode,
                     TextSize = 11,
                     TextColor3 = SwiftUI.Theme.Font,
+                    ClearTextOnFocus = false,
                     Size = UDim2.fromOffset(56, 16),
                     AnchorPoint = Vector2.new(1, 0),
                     Position = UDim2.new(1, 0, 0, 0),
@@ -2074,10 +2076,21 @@ function SwiftUI:CreateWindow(Config)
                     Value = math.clamp(RoundValue(Value), Min, Max)
                     Slider.Value = Value
                     UpdateVisual(Value, true)
+                    ValueLabel.Text = tostring(Prefix .. tostring(Value) .. Suffix)
                     SwiftUI:SafeCallback(Callback, Value)
                     if Id then SwiftUI.Options[Id] = Slider end
                 end
                 function Slider:OnChanged(Func) Callback = Func end
+
+                ValueLabel.FocusLost:Connect(function()
+                    local Raw = ValueLabel.Text:gsub("[^%d%-%.]", "")
+                    local Num = tonumber(Raw)
+                    if Num then
+                        Slider:SetValue(Num)
+                    else
+                        ValueLabel.Text = tostring(Prefix .. tostring(Slider.Value) .. Suffix)
+                    end
+                end)
 
                 local Dragging = false
                 local function UpdateFromInput(Input)
@@ -2665,58 +2678,6 @@ function SwiftUI:CreateWindow(Config)
                     Callback = function() ToggleApi:SetValue(not ToggleApi.Value) end,
                 })
                 return ToggleApi, KeybindApi
-            end
-
-            function Groupbox:AddSliderInput(Id, Config)
-                if typeof(Id) == "table" then Config = Id; Id = Config.Text or "SliderInput" end
-                Config = Config or {}
-                local SliderApi = Groupbox:AddSlider(Id .. "_Slider", {
-                    Text = Config.Text or Id,
-                    Default = Config.Default or 0,
-                    Min = Config.Min or 0,
-                    Max = Config.Max or 100,
-                    Rounding = Config.Rounding or 0,
-                    Callback = Config.Callback,
-                })
-                local Holder = SliderApi.Holder
-                if Holder then
-                    local InputBox = SwiftUI:Create("Frame", {
-                        BackgroundColor3 = SwiftUI.Theme.Element,
-                        Size = UDim2.fromOffset(36, 18),
-                        AnchorPoint = Vector2.new(1, 0.5),
-                        Position = UDim2.new(1, -44, 0.5, 0),
-                        Parent = Holder,
-                    })
-                    SwiftUI:ApplyCorner(InputBox, 0)
-                    SwiftUI:ApplyStroke(InputBox, SwiftUI.Theme.Outline, 1)
-                    local TextBox = SwiftUI:Create("TextBox", {
-                        BackgroundTransparency = 1,
-                        Text = tostring(SliderApi.Value),
-                        PlaceholderText = "",
-                        FontFace = SwiftUI.FontCode,
-                        TextSize = 10,
-                        TextColor3 = SwiftUI.Theme.Font,
-                        TextXAlignment = Enum.TextXAlignment.Center,
-                        ClearTextOnFocus = false,
-                        Size = UDim2.fromScale(1, 1),
-                        Parent = InputBox,
-                    })
-                    TextBox.FocusLost:Connect(function()
-                        local Num = tonumber(TextBox.Text)
-                        if Num then
-                            Num = math.clamp(Num, Config.Min or 0, Config.Max or 100)
-                            SliderApi:SetValue(Num)
-                            TextBox.Text = tostring(Num)
-                        end
-                    end)
-                    TextBox:GetPropertyChangedSignal("Text"):Connect(function()
-                        local Num = tonumber(TextBox.Text)
-                        if Num then
-                            SliderApi:SetValue(Num)
-                        end
-                    end)
-                end
-                return SliderApi
             end
 
             function Groupbox:AddColorPicker(Id, Config)

@@ -29,7 +29,7 @@ T1:AddColorPicker({Default = Color3.fromRGB(124,92,255), Callback = function(C) 
 CombatLeft:AddToggle("AutoParry", {Text = "Auto Parry", Default = true, Color = Color3.fromRGB(46,204,113), Callback = function(V) print(V) end})
 CombatLeft:AddDivider()
 CombatLeft:AddSlider("WalkSpeed", {Text = "WalkSpeed", Min = 16, Max = 150, Default = 16, Suffix = " studs", Callback = function(V) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = V end})
-CombatLeft:AddSliderInput("FOVSlider", {Text = "FOV Slider+Input", Min = 70, Max = 120, Default = 90, Suffix = "°", Callback = print})
+CombatLeft:AddSlider("FOVSlider", {Text = "FOV Slider+Input", Min = 70, Max = 120, Default = 90, Suffix = "°", Callback = print})
 CombatLeft:AddDropdown("Weapon", {Text = "Weapon", Values = {"Sword","Gun","Fists","Magic"}, Default = "Sword", Callback = print})
 CombatLeft:AddButton({Text = "Execute", Icon = "▶", Tooltip = "Run exploit", Func = function() SwiftUI:Notify({Title = "Swift", Description = "Executed!", Time = 2}) end})
 
