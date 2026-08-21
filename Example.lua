@@ -7,31 +7,25 @@ ThemeManager:SetLibrary(SwiftUI)
 
 local Window = SwiftUI:CreateWindow({
     Title = "Swift UI",
-    Footer = "Polished • v1.2",
+    Footer = "v1.2",
     Size = UDim2.fromOffset(680, 560),
     ToggleKeybind = Enum.KeyCode.RightShift,
 })
-
-Window:SetFooter("swift-ui polished • place: " .. tostring(game.PlaceId))
 
 local MainTab = Window:AddTab("Main", "★")
 local CombatTab = Window:AddTab("Combat", "⚔")
 local VisualsTab = Window:AddTab("Visuals", "👁")
 local SettingsTab = Window:AddTab("Settings", "⚙")
 
--- Main Tab
 local CombatLeft = MainTab:AddLeftGroupbox("Combat")
-CombatLeft:AddSection("Controls")
-CombatLeft:AddParagraph("Welcome", "This is the updated Swift UI library with new controls!")
-CombatLeft:AddLabel("Collapsible • search at top filters this", true)
+CombatLeft:AddLabel("Collapsible groupbox with search", true)
 local T1 = CombatLeft:AddToggle("AutoFarm", {Text = "Auto Farm", Default = false, Callback = function(V) print("Farm", V) end})
 T1:AddColorPicker({Default = Color3.fromRGB(124,92,255), Callback = function(C) print("Farm color", C) end})
 CombatLeft:AddToggle("AutoParry", {Text = "Auto Parry", Default = true, Color = Color3.fromRGB(46,204,113), Callback = function(V) print(V) end})
 CombatLeft:AddDivider()
 CombatLeft:AddSlider("WalkSpeed", {Text = "WalkSpeed", Min = 16, Max = 150, Default = 16, Suffix = " studs", Callback = function(V) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = V end})
-CombatLeft:AddSlider("FOVSlider", {Text = "FOV Slider+Input", Min = 70, Max = 120, Default = 90, Suffix = "°", Callback = print})
 CombatLeft:AddDropdown("Weapon", {Text = "Weapon", Values = {"Sword","Gun","Fists","Magic"}, Default = "Sword", Callback = print})
-CombatLeft:AddButton({Text = "Execute", Icon = "▶", Tooltip = "Run exploit", Func = function() SwiftUI:Notify({Title = "Swift", Description = "Executed!", Time = 2}) end})
+CombatLeft:AddButton({Text = "Execute", Func = function() SwiftUI:Notify({Title = "Swift", Description = "Executed!", Time = 2}) end})
 
 local VisualsRight = MainTab:AddRightGroupbox("Visuals")
 VisualsRight:AddToggle("ESP", {Text = "ESP Enabled", Default = true, Callback = print})
@@ -47,41 +41,27 @@ VisualsRight:AddDivider()
 VisualsRight:AddSlider("FOV", {Text = "FOV", Min = 70, Max = 120, Default = 70, Suffix = "°", Callback = print})
 VisualsRight:AddDropdown("Quality", {Text = "Quality", Values = {"Low","Medium","High","Ultra"}, Default = "High", Callback = print})
 
--- Combat Tab
 local PlayerGroup = CombatTab:AddLeftGroupbox("Player")
-PlayerGroup:AddSection("Character")
 PlayerGroup:AddSlider("Speed", {Text = "Speed", Min = 0, Max = 300, Default = 100, Suffix = "%", Callback = print})
 PlayerGroup:AddToggle("Noclip", {Text = "Noclip", Default = false})
 PlayerGroup:AddToggleKeybind("Fly", {Text = "Fly", Default = false, Keybind = Enum.KeyCode.F})
 PlayerGroup:AddDivider()
 PlayerGroup:AddButton({Text = "Reset Character", Func = function() game.Players.LocalPlayer.Character:BreakJoints() end})
 
--- Visuals Tab
 local WorldGroup = VisualsTab:AddLeftGroupbox("World")
-WorldGroup:AddSection("Lighting")
-WorldGroup:AddParagraph("World Options", "Toggle fullbright, adjust brightness, and pick ambient color below.")
 WorldGroup:AddToggle("Fullbright", {Text = "Fullbright", Default = false})
 WorldGroup:AddSlider("Brightness", {Text = "Brightness", Min = 0, Max = 5, Default = 2, Rounding = 1, Callback = print})
 WorldGroup:AddColorPicker("Ambient", {Text = "Ambient", Default = Color3.fromRGB(150,150,150)})
 
--- Settings Tab
 SaveManager:SetFolder("SwiftUI")
 SaveManager:BuildConfigSection(SettingsTab)
 ThemeManager:BuildThemeSection(SettingsTab)
 
 local CustomGroup = SettingsTab:AddLeftGroupbox("Customization")
-CustomGroup:AddLabel("Make it very customizable", true)
 CustomGroup:AddSlider("CornerRadius", {Text = "Corner Radius", Min = 0, Max = 12, Default = 0, Rounding = 0, Callback = function(V) SwiftUI:SetCornerRadius(V) end})
 CustomGroup:AddSlider("UIScale", {Text = "UI Scale", Min = 80, Max = 120, Default = 100, Suffix = "%", Callback = function(V) SwiftUI:SetScale(V/100) end})
 CustomGroup:AddSlider("Transparency", {Text = "Transparency", Min = 0, Max = 50, Default = 0, Suffix = "%", Callback = function(V) SwiftUI:SetTransparency(V/100) end})
-CustomGroup:AddButton({Text = "Reset Custom", Func = function() SwiftUI:SetCornerRadius(0) SwiftUI:SetScale(1) SwiftUI:SetTransparency(0) SwiftUI:SetAccent(Color3.fromRGB(124,92,255)) end})
-
-local Info = SettingsTab:AddRightGroupbox("About")
-Info:AddLabel("Swift UI • Straight boxy dark • Accent updates live", true)
-Info:AddDivider()
-Info:AddLabel("Search filters labels/toggles • Click groupbox header to collapse • RightShift toggles", true)
-Info:AddButton({Text = "Copy Discord", Func = function() setclipboard("https://discord.gg/swift") SwiftUI:Notify({Title = "Copied", Description = "Discord copied", Time = 2}) end})
+CustomGroup:AddButton({Text = "Reset", Func = function() SwiftUI:SetCornerRadius(0) SwiftUI:SetScale(1) SwiftUI:SetTransparency(0) end})
 
 SaveManager:LoadAutoload()
-SwiftUI:Watermark({Text = "Swift UI v1.2 loaded", Duration = 4})
-SwiftUI:Notify({Title = "Swift UI", Description = "Polished loaded!", Time = 3})
+SwiftUI:Notify({Title = "Swift UI", Description = "Loaded", Time = 3})
