@@ -3416,6 +3416,48 @@ function SwiftUI:Unload()
     self.Unloaded = true
 end
 
+function SwiftUI:SetTheme(ThemeData)
+    for Key, Value in pairs(ThemeData) do
+        if self.Theme[Key] ~= nil and typeof(Value) == "Color3" then
+            self.Theme[Key] = Value
+        end
+    end
+    if ThemeData.Accent then
+        self.Theme.AccentHover = Color3.fromRGB(
+            math.clamp(ThemeData.Accent.R * 255 + 14, 0, 255),
+            math.clamp(ThemeData.Accent.G * 255 + 14, 0, 255),
+            math.clamp(ThemeData.Accent.B * 255 + 14, 0, 255)
+        )
+    end
+    self:ApplyThemeToAll()
+end
+
+function SwiftUI:AddTheme(Name, ThemeData)
+    self.CustomThemes = self.CustomThemes or {}
+    self.CustomThemes[Name] = ThemeData
+end
+
+function SwiftUI:ApplyThemeToAll()
+    if not self.ScreenGui then return end
+    local T = self.Theme
+    for _, Desc in ipairs(self.ScreenGui:GetDescendants()) do
+        pcall(function()
+            if Desc:IsA("GuiObject") then
+                if Desc.BackgroundColor3 == T.Element or Desc.Name == "Element" then
+                    Desc.BackgroundColor3 = T.Element
+                end
+            end
+        end)
+    end
+    for _, W in ipairs(self.Windows) do
+        pcall(function()
+            if W.Main then W.Main.BackgroundColor3 = T.Main end
+            if W.Sidebar then W.Sidebar.BackgroundColor3 = T.Sidebar end
+            if W.Titlebar then W.Titlebar.BackgroundColor3 = T.Sidebar end
+        end)
+    end
+end
+
 function SwiftUI:Watermark(Config)
     Config = Config or {}
     local Text = Config.Text or "Swift UI"
