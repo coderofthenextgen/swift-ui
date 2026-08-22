@@ -3413,9 +3413,9 @@ end
 
 function SwiftUI:SetTheme(ThemeData)
     local Old = {}
-    for Key, _ in pairs(self.Theme) do
-        if typeof(self.Theme[Key]) == "Color3" then
-            Old[Key] = self.Theme[Key]
+    for Key, Val in pairs(self.Theme) do
+        if typeof(Val) == "Color3" then
+            Old[Key] = Val
         end
     end
     for Key, Value in pairs(ThemeData) do
@@ -3424,6 +3424,7 @@ function SwiftUI:SetTheme(ThemeData)
         end
     end
     if ThemeData.Accent then
+        Old.AccentHover = self.Theme.AccentHover
         self.Theme.AccentHover = Color3.fromRGB(
             math.clamp(ThemeData.Accent.R * 255 + 14, 0, 255),
             math.clamp(ThemeData.Accent.G * 255 + 14, 0, 255),
@@ -3441,9 +3442,14 @@ end
 function SwiftUI:RecolorAll(OldColors)
     if not self.ScreenGui then return end
     local T = self.Theme
+    local function Close(a, b, eps)
+        eps = eps or 0.02
+        return math.abs(a.R - b.R) < eps and math.abs(a.G - b.G) < eps and math.abs(a.B - b.B) < eps
+    end
     local function Remap(Color)
+        if not Color then return nil end
         for Key, OldC in pairs(OldColors) do
-            if OldC == Color and T[Key] and typeof(T[Key]) == "Color3" then
+            if Close(OldC, Color) and T[Key] and typeof(T[Key]) == "Color3" then
                 return T[Key]
             end
         end
@@ -3451,21 +3457,40 @@ function SwiftUI:RecolorAll(OldColors)
     end
     for _, Desc in ipairs(self.ScreenGui:GetDescendants()) do
         pcall(function()
-            if Desc:IsA("GuiObject") and Desc.BackgroundColor3 then
+            if Desc:IsA("GuiObject") then
                 local New = Remap(Desc.BackgroundColor3)
                 if New then Desc.BackgroundColor3 = New end
             end
-            if (Desc:IsA("TextLabel") or Desc:IsA("TextButton") or Desc:IsA("TextBox")) and Desc.TextColor3 then
+            if Desc:IsA("TextLabel") or Desc:IsA("TextButton") or Desc:IsA("TextBox") then
                 local New = Remap(Desc.TextColor3)
                 if New then Desc.TextColor3 = New end
+                local New2 = Remap(Desc.PlaceholderColor3)
+                if New2 then Desc.PlaceholderColor3 = New2 end
             end
-            if Desc:IsA("UIStroke") and Desc.Color then
+            if Desc:IsA("UIStroke") then
                 local New = Remap(Desc.Color)
                 if New then Desc.Color = New end
             end
-            if Desc:IsA("ScrollingFrame") and Desc.ScrollBarImageColor3 then
+            if Desc:IsA("ScrollingFrame") then
                 local New = Remap(Desc.ScrollBarImageColor3)
                 if New then Desc.ScrollBarImageColor3 = New end
+            end
+            if Desc:IsA("UIGradient") then
+                local OldSeq = Desc.Color
+                if OldSeq and typeof(OldSeq) == "ColorSequence" then
+                    local Changed = false
+                    local Keypoints = {}
+                    for _, KP in ipairs(OldSeq.Keypoints) do
+                        local New = Remap(KP.Value)
+                        if New then
+                            table.insert(Keypoints, ColorSequenceKeypoint.new(KP.Time, New))
+                            Changed = true
+                        else
+                            table.insert(Keypoints, KP)
+                        end
+                    end
+                    if Changed then Desc.Color = ColorSequence.new(Keypoints) end
+                end
             end
         end)
     end
