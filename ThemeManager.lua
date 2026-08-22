@@ -146,13 +146,14 @@ end
 
 function ThemeManager:SetAccent(Color)
     if not ThemeManager.Library then return end
+    local Old = ThemeManager.Library.Theme.Accent
     ThemeManager.Library.Theme.Accent = Color
     ThemeManager.Library.Theme.AccentHover = Color3.fromRGB(
         math.clamp(Color.R * 255 + 14, 0, 255),
         math.clamp(Color.G * 255 + 14, 0, 255),
         math.clamp(Color.B * 255 + 14, 0, 255)
     )
-    ThemeManager.Library:ApplyThemeToAll()
+    ThemeManager.Library:RecolorAll({Accent = Old})
 end
 
 function ThemeManager:SaveTheme()

@@ -86,12 +86,7 @@ function SwiftUI:SetAccent(Color)
         math.clamp(Color.G * 255 + 14, 0, 255),
         math.clamp(Color.B * 255 + 14, 0, 255)
     )
-    for _, Desc in ipairs(self.ScreenGui:GetDescendants()) do
-        pcall(function()
-            if Desc.BackgroundColor3 == Old then Desc.BackgroundColor3 = Color end
-            if (Desc:IsA("TextLabel") or Desc:IsA("TextButton") or Desc:IsA("TextBox")) and Desc.TextColor3 == Old then Desc.TextColor3 = Color end
-        end)
-    end
+    self:RecolorAll({Accent = Old})
 end
 
 SwiftUI.IsMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
@@ -3417,6 +3412,12 @@ function SwiftUI:Unload()
 end
 
 function SwiftUI:SetTheme(ThemeData)
+    local Old = {}
+    for Key, _ in pairs(self.Theme) do
+        if typeof(self.Theme[Key]) == "Color3" then
+            Old[Key] = self.Theme[Key]
+        end
+    end
     for Key, Value in pairs(ThemeData) do
         if self.Theme[Key] ~= nil and typeof(Value) == "Color3" then
             self.Theme[Key] = Value
@@ -3429,7 +3430,7 @@ function SwiftUI:SetTheme(ThemeData)
             math.clamp(ThemeData.Accent.B * 255 + 14, 0, 255)
         )
     end
-    self:ApplyThemeToAll()
+    self:RecolorAll(Old)
 end
 
 function SwiftUI:AddTheme(Name, ThemeData)
@@ -3437,15 +3438,34 @@ function SwiftUI:AddTheme(Name, ThemeData)
     self.CustomThemes[Name] = ThemeData
 end
 
-function SwiftUI:ApplyThemeToAll()
+function SwiftUI:RecolorAll(OldColors)
     if not self.ScreenGui then return end
     local T = self.Theme
+    local function Remap(Color)
+        for Key, OldC in pairs(OldColors) do
+            if OldC == Color and T[Key] and typeof(T[Key]) == "Color3" then
+                return T[Key]
+            end
+        end
+        return nil
+    end
     for _, Desc in ipairs(self.ScreenGui:GetDescendants()) do
         pcall(function()
-            if Desc:IsA("GuiObject") then
-                if Desc.BackgroundColor3 == T.Element or Desc.Name == "Element" then
-                    Desc.BackgroundColor3 = T.Element
-                end
+            if Desc:IsA("GuiObject") and Desc.BackgroundColor3 then
+                local New = Remap(Desc.BackgroundColor3)
+                if New then Desc.BackgroundColor3 = New end
+            end
+            if (Desc:IsA("TextLabel") or Desc:IsA("TextButton") or Desc:IsA("TextBox")) and Desc.TextColor3 then
+                local New = Remap(Desc.TextColor3)
+                if New then Desc.TextColor3 = New end
+            end
+            if Desc:IsA("UIStroke") and Desc.Color then
+                local New = Remap(Desc.Color)
+                if New then Desc.Color = New end
+            end
+            if Desc:IsA("ScrollingFrame") and Desc.ScrollBarImageColor3 then
+                local New = Remap(Desc.ScrollBarImageColor3)
+                if New then Desc.ScrollBarImageColor3 = New end
             end
         end)
     end
@@ -3454,6 +3474,7 @@ function SwiftUI:ApplyThemeToAll()
             if W.Main then W.Main.BackgroundColor3 = T.Main end
             if W.Sidebar then W.Sidebar.BackgroundColor3 = T.Sidebar end
             if W.Titlebar then W.Titlebar.BackgroundColor3 = T.Sidebar end
+            if W.Footer then W.Footer.BackgroundColor3 = T.Sidebar end
         end)
     end
 end
