@@ -55,22 +55,28 @@ function SaveManager:Save(Name)
     for Id, Option in pairs(SaveManager.Library.Options) do
         if not SaveManager.Ignore[Id] then
             if Option.Type == "ColorPicker" then
-            Data.Options[Id] = {
-                Type = "ColorPicker",
-                Value = {R = Option.Value.R, G = Option.Value.G, B = Option.Value.B},
-            }
-        elseif Option.Type == "KeyPicker" then
-            Data.Options[Id] = {
-                Type = "KeyPicker",
-                Value = typeof(Option.Value) == "EnumItem" and Option.Value.Name or tostring(Option.Value),
-                Mode = Option.Mode,
-            }
-        else
-            Data.Options[Id] = {
-                Type = Option.Type,
-                Value = Option.Value,
-                Values = Option.Values,
-            }
+                Data.Options[Id] = {
+                    Type = "ColorPicker",
+                    Value = {R = Option.Value.R, G = Option.Value.G, B = Option.Value.B},
+                }
+            elseif Option.Type == "KeyPicker" then
+                Data.Options[Id] = {
+                    Type = "KeyPicker",
+                    Value = typeof(Option.Value) == "EnumItem" and Option.Value.Name or tostring(Option.Value),
+                    Mode = Option.Mode,
+                }
+            elseif Option.Type == "Toggle" then
+                Data.Options[Id] = {
+                    Type = "Toggle",
+                    Value = Option.Value,
+                    ColorValue = Option.ColorValue and {R = Option.ColorValue.R, G = Option.ColorValue.G, B = Option.ColorValue.B} or nil,
+                }
+            else
+                Data.Options[Id] = {
+                    Type = Option.Type,
+                    Value = Option.Value,
+                    Values = Option.Values,
+                }
             end
         end
     end
@@ -135,18 +141,26 @@ function SaveManager:Load(Name)
         local Option = SaveManager.Library.Options[Id]
         if Option and not SaveManager.Ignore[Id] then
             if Saved.Type == "ColorPicker" and Saved.Value then
-            local C = Saved.Value
-            local Color = Color3.new(C.R, C.G, C.B)
-            if Option.SetValue then Option:SetValue(Color) end
-        elseif Saved.Type == "KeyPicker" and Saved.Value then
-            local KeyCode = Enum.KeyCode[Saved.Value]
-            if KeyCode and Option.SetValue then
-                Option:SetValue(KeyCode, Saved.Mode)
-            end
-        else
-            if Option.SetValue and Saved.Value ~= nil then
-                pcall(function() Option:SetValue(Saved.Value) end)
-            end
+                local C = Saved.Value
+                local Color = Color3.new(C.R, C.G, C.B)
+                if Option.SetValue then Option:SetValue(Color) end
+            elseif Saved.Type == "KeyPicker" and Saved.Value then
+                local KeyCode = Enum.KeyCode[Saved.Value]
+                if KeyCode and Option.SetValue then
+                    Option:SetValue(KeyCode, Saved.Mode)
+                end
+            elseif Saved.Type == "Toggle" then
+                if Saved.Value ~= nil and Option.SetValue then
+                    pcall(function() Option:SetValue(Saved.Value) end)
+                end
+                if Saved.ColorValue and Option.SetColor then
+                    local C = Saved.ColorValue
+                    pcall(function() Option:SetColor(Color3.new(C.R, C.G, C.B)) end)
+                end
+            else
+                if Option.SetValue and Saved.Value ~= nil then
+                    pcall(function() Option:SetValue(Saved.Value) end)
+                end
             end
         end
     end
